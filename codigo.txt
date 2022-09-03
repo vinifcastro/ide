@@ -1,0 +1,7 @@
+IDE EM C - PARA PARAR DE DIGITAR O CODIGO UTILIZE O CARACTERE '|'.
+001 - asdaasdasdasda
+002 - asdasdasd
+003 - 
+004 - asdas
+005 - 
+006 - asdasdasdasda
