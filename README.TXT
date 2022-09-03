@@ -1,3 +1,5 @@
+Alunos: Vinicius de Freitas Castro, Matheus Diogo da Silva, Giordanna Santos e Souza.
+
 PARA A EXECUÇÃO DESSE PROGRAMA É NECESSÁRIO QUE TENHA INSTALADO A BIBLIOTECA CONIO.H, COLOCANDO OS SEGUINTES COMANDOS NO TERMINAL:
 
 1 - sudo apt-get update
