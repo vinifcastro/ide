@@ -71,10 +71,10 @@ void libera_pilha(Pilha ** fila){
 }
 
 int main() {
-    char input = '.', aux = '|', anterior = '|';
-    Pilha *parenteses = NULL, *maiormenor = NULL, *chaves = NULL;
+    char input = '.', aux = '|', anterior = '|', z;
+    Pilha *parenteses = NULL, *chaves = NULL;
     FILE* backup = NULL, * help = NULL;
-    int i = 1, j, k;
+    int i = 1, j, k, erro = 0;
     backup = fopen("codigo.txt", "w");
     fprintf(backup, "\n\n\tIDE EM C - PARA PARAR DE DIGITAR O CODIGO UTILIZE O CARACTERE '|'.\n%03d - ", i);
     fclose(backup);
@@ -85,14 +85,11 @@ int main() {
         escreveoarquivo();
         input = getch();
 
-        if ( (input == '{') || (input == '}') || (input == '<') || (input == '>') || (input == '(') || (input == ')') ){
-            if( (input == '{') || (input == '<') || (input == '(') ){
+        if ( (input == '{') || (input == '}') || (input == '(') || (input == ')') ){
+            if( (input == '{')|| (input == '(') ){
                 switch(input){
                     case '(':
                         empilha_num(&parenteses, i);
-                        break;
-                    case '<':
-                        empilha_num(&maiormenor, i);
                         break;
                     default:
                         empilha_num(&chaves, i);
@@ -105,26 +102,20 @@ int main() {
                     case ')':
                         k= desempilha_num(&parenteses);
                         if(k == -1){ 
+                            system("clear");
                             printf("\n\nErro de digitacao, voce tentou fechar um parenteses ')' sem abri-lo antes.\n\n");
+                            erro++;
                             input = '|';
                         }
-                        system("pause");
-                        break;
-                    case '>':
-                        k= desempilha_num(&maiormenor);
-                        if(k == -1){ 
-                            printf("\n\nErro de digitacao, voce tentou fechar um '>' sem abri-lo antes.\n\n");
-                            input = '|';
-                        }
-                        system("pause");
                         break;
                     default:
                         k= desempilha_num(&chaves);
                         if(k == -1){ 
+                            system("clear");
                             printf("\n\nErro de digitacao, voce tentou fechar uma chave '}' sem abri-la antes.\n\n");
+                            erro++;
                             input = '|';
                         }
-                        system("pause");
                         break;
                 }
                 if(k != -1)
@@ -135,39 +126,45 @@ int main() {
         else{
             switch (input) {
                 case '\n':
+                    if(anterior != '{' && anterior != '>' && anterior != '}' && anterior != '\n' && anterior != ';'){
+                        system("clear");
+                        printf("\nErro na linha %d, faltou um ';'.\n", i);
+                        erro++;
+                        input = '|';
+                    }
                     fprintf(backup, "\n");
                     i++;
                     fprintf(backup, "%03d - ", i);
                     break;
                 case 127:
-                    if( (anterior == '{') || (anterior == '(') || (anterior == '<') ){
+                    if( (anterior == '{') || (anterior == '(') ){
                         switch(anterior){
                             case '{':
                                 k = desempilha_num(&chaves);
                                 break;
-                            case '(':
-                                k = desempilha_num(&parenteses);
-                                break;
                             default:
-                                k = desempilha_num(&maiormenor);
+                                k = desempilha_num(&parenteses);
                                 break;
                         }
                     }
-                    if( (anterior == '}') || (anterior == ')') || (anterior == '>') ){
+                    if( (anterior == '}') || (anterior == ')') ){
                         switch(anterior){
                             case '}':
                                 empilha_num(&chaves, i-1);
                                 break;
-                            case ')':
-                                empilha_num(&parenteses, i-1);
-                                break;
                             default:
-                                empilha_num(&maiormenor, i-1);
+                                empilha_num(&parenteses, i-1);
                                 break;
                         }
                     }
+                    fseek(backup,-2,SEEK_END);
+                    aux = fgetc(backup);
                     help = fopen("help.txt", "w");
-                    fseek(backup,-1,SEEK_END);
+                    if(aux == '-'){
+                        fseek(backup,-7,SEEK_END);
+                        i--;
+                    }
+                    else fseek(backup,-1,SEEK_END);
                     k = ftell(backup);
                     fseek(backup,0,SEEK_SET);
                     for(j=0; j<k; j++) {
@@ -189,6 +186,157 @@ int main() {
                     fclose(help);
                     remove("help.txt");
                     break;
+                case 'i':
+                    if(anterior == '\n' || anterior == ';'){
+                        system("clear");
+                        z = 'z';
+                        while(z != 'n' && z != 'N' && z != 's' && z != 'S'){
+                            printf("Deseja escrever a funcao 'if' [s/n]?\n");
+                            scanf("%c%*c", &z);
+                            if(z != 'n' && z != 'N' && z != 's' && z != 'S') printf("Opção selecionada invalida!\n");
+                        }
+
+                        if(z == 'n' || z == 'N') fprintf(backup, "%c", input);
+                        else{
+                            fprintf(backup, "if(");
+                            empilha_num(&parenteses, i);
+                            input = '(';
+                        }
+                    }
+                    else {
+                        if (input != '|')
+                            fprintf(backup, "%c", input);
+                    }
+                    break;
+                case 'b':
+                    if(anterior == '\n' || anterior == ';'){
+                        system("clear");
+                        z = 'z';
+                        while(z != 'n' && z != 'N' && z != 's' && z != 'S'){
+                            printf("Deseja escrever a funcao 'break' [s/n]?\n");
+                            scanf("%c%*c", &z);
+                            if(z != 'n' && z != 'N' && z != 's' && z != 'S') printf("Opção selecionada invalida!\n");
+                        }
+
+                        if(z == 'n' || z == 'N') fprintf(backup, "%c", input);
+                        else{
+                            fprintf(backup, "break;");
+                            input = ';';
+                        }
+                    }
+                    else {
+                        if (input != '|')
+                            fprintf(backup, "%c", input);
+                    }
+                    break;
+                case 's':
+                    if(anterior == '\n' || anterior == ';'){
+                        system("clear");
+                        z = 'z';
+                        while(z != 'n' && z != 'N' && z != 's' && z != 'S'){
+                            printf("Deseja escrever a funcao 'switch' [s/n]?\n");
+                            scanf("%c%*c", &z);
+                            if(z != 'n' && z != 'N' && z != 's' && z != 'S') printf("Opção selecionada invalida!\n");
+                        }
+
+                        if(z == 'n' || z == 'N') fprintf(backup, "%c", input);
+                        else{
+                            fprintf(backup, "switch(");
+                            empilha_num(&parenteses, i);
+                            input = '(';
+                        }
+                    }
+                    else {
+                        if (input != '|')
+                            fprintf(backup, "%c", input);
+                    }
+                    break;
+                case 'e':
+                    if(anterior == '\n' || anterior == ';' || anterior == '}'){
+                        system("clear");
+                        z = 'z';
+                        while(z != 'n' && z != 'N' && z != 's' && z != 'S'){
+                            printf("Deseja escrever a funcao 'else' [s/n]?\n");
+                            scanf("%c%*c", &z);
+                            if(z != 'n' && z != 'N' && z != 's' && z != 'S') printf("Opção selecionada invalida!\n");
+                        }
+
+                        if(z == 'n' || z == 'N') fprintf(backup, "%c", input);
+                        else{
+                            fprintf(backup, "else {");
+                            empilha_num(&chaves, i);
+                            input = '{';
+                        }
+                    }
+                    else {
+                        if (input != '|')
+                            fprintf(backup, "%c", input);
+                    }
+                    break;
+                case 'f':
+                    if(anterior == '\n' || anterior == ';'){
+                        system("clear");
+                        z = 'z';
+                        while(z != 'n' && z != 'N' && z != 's' && z != 'S'){
+                            printf("Deseja escrever a funcao 'for' [s/n]?\n");
+                            scanf("%c%*c", &z);
+                            if(z != 'n' && z != 'N' && z != 's' && z != 'S') printf("Opção selecionada invalida!\n");
+                        }
+
+                        if(z == 'n' || z == 'N') fprintf(backup, "%c", input);
+                        else{
+                            fprintf(backup, "for(");
+                            empilha_num(&parenteses, i);
+                            input = '(';
+                        }
+                    }
+                    else {
+                        if (input != '|')
+                            fprintf(backup, "%c", input);
+                    }
+                    break;
+                case 'r':
+                    if(anterior == '\n' || anterior == ';'){
+                        system("clear");
+                        z = 'z';
+                        while(z != 'n' && z != 'N' && z != 's' && z != 'S'){
+                            printf("Deseja escrever a funcao 'return' [s/n]?\n");
+                            scanf("%c%*c", &z);
+                            if(z != 'n' && z != 'N' && z != 's' && z != 'S') printf("Opção selecionada invalida!\n");
+                        }
+
+                        if(z == 'n' || z == 'N') fprintf(backup, "%c", input);
+                        else{
+                            fprintf(backup, "return");
+                        }
+                    }
+                    else {
+                        if (input != '|')
+                            fprintf(backup, "%c", input);
+                    }
+                    break;
+                case 'w':
+                    if(anterior == '\n' || anterior == ';'){
+                        system("clear");
+                        z = 'z';
+                        while(z != 'n' && z != 'N' && z != 's' && z != 'S'){
+                            printf("Deseja escrever a funcao 'while' [s/n]?\n");
+                            scanf("%c%*c", &z);
+                            if(z != 'n' && z != 'N' && z != 's' && z != 'S') printf("Opção selecionada invalida!\n");
+                        }
+
+                        if(z == 'n' || z == 'N') fprintf(backup, "%c", input);
+                        else{
+                            fprintf(backup, "while(");
+                            empilha_num(&parenteses, i);
+                            input = '(';
+                        }
+                    }
+                    else {
+                        if (input != '|')
+                            fprintf(backup, "%c", input);
+                    }
+                    break;
                 default:
                     if (input != '|')
                         fprintf(backup, "%c", input);
@@ -201,16 +349,11 @@ int main() {
     } while (input != '|');
 
 
-    if(parenteses != NULL || maiormenor != NULL || chaves != NULL) printf("\n\n\tERRO DE COMPILACAO:\n\n");
+    if(parenteses != NULL || chaves != NULL) printf("\n\n\tERRO DE COMPILACAO:\n\n");
     
     if(parenteses != NULL){
         printf("\n\nParenteses '(' abertos e nao fechados nas linhas: ");
         printalinhasnaofechadas(parenteses);
-        printf("\n\n");
-    }
-    if(maiormenor != NULL){
-        printf("\n\nMaiores '<' abertos e nao fechados nas linhas: ");
-        printalinhasnaofechadas(maiormenor);
         printf("\n\n");
     }
     if(chaves!= NULL){
@@ -219,10 +362,9 @@ int main() {
         printf("\n\n");
     }
 
-    if(parenteses == NULL && maiormenor == NULL && chaves == NULL) printf("\n\nCompilacao executada com sucesso.\n\n");
+    if(parenteses == NULL && chaves == NULL && erro == 0 ) printf("\n\nCompilacao executada com sucesso.\n\n");
 
     libera_pilha(&parenteses);
-    libera_pilha(&maiormenor);
     libera_pilha(&chaves);
     return 0;
 }
